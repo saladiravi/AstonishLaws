@@ -4,9 +4,16 @@ exports.adsmanagement = async (req, res) => {
     try {
 
        
-        const addsimage = req.files?.addimage?.[0]?.filename
-            ? `uploads/${req.files.addimage[0].filename}`
+        const addsimage = req.files?.ads_image?.[0]?.filename
+            ? `uploads/${req.files.ads_image[0].filename}`
             : null
+
+            if (!addsimage) {
+                return res.status(400).json({
+                    statusCode: 400,
+                    message: 'ads_image file is required'
+                });
+            }
         const ads = await pool.query(`INSERT INTO public.tbl_ads(ads_image) values($1) RETURNING *`,
             [addsimage]);  
 
