@@ -8,7 +8,7 @@ router.post('/addcontact',contact.addContact);
 router.get('/getallContact',contact.getContacts);
 router.post('/getcontactByid',contact.getcontactByid);
 router.post('/updateContacts',contact.updateContact);
-
+router.get('/getcontactlatest',contact.getContactlatest);
 router.post('/deletecontact',contact.deleteContact);
 
 
