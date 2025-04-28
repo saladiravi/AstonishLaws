@@ -78,7 +78,7 @@ exports.getcontactByid = async (req, res) => {
 
 exports.updateContact = async (req, res) => {
     try {
-        const { email, ph_number, address } = req.body;
+        const { contact_id,email, ph_number, address } = req.body;
 
 
 
@@ -197,3 +197,19 @@ exports.deleteContact = async (req, res) => {
     }
 };
 
+
+exports.getContactlatest = async (req, res) => {
+    try {
+        const latestContact = await pool.query("SELECT * FROM tbl_contact ORDER BY contact_id DESC LIMIT 1");
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Latest Contact Fetched Successfully',
+            contact: latestContact.rows[0],  // Return only the first (latest) contact
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: 'Internal Server error',
+            details: err.message,
+        });
+    }
+}
