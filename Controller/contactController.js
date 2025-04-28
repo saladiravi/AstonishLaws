@@ -3,40 +3,33 @@ const pool = require('../db/db');
 
 
 exports.addContact = async (req, res) => {
-    const { email, ph_number, address } = req.body
+    const { email, ph_number, address } = req.body;
 
     try {
-        if (!email, !ph_number, !address) {
-            return res.status(400).json({ error: 'email,phnumber,address required' });
-
+        if (!email || !ph_number || !address) {
+            return res.status(400).json({ error: 'email, ph_number, and address are required' });
         }
 
         const contact = await pool.query(
             `INSERT INTO public.tbl_contact (
-                  email,
-                  ph_number,
-                  address,
-                  
-                ) VALUES ($1, $2, $3) RETURNING *`,
-            [
                 email,
                 ph_number,
-                address,
-            ]
+                address
+            ) VALUES ($1, $2, $3) RETURNING *`,
+            [email, ph_number, address]
         );
-
-
 
         res.status(200).json({
             statusCode: 200,
             message: 'Contact details Added Successfully',
             contact: contact.rows[0],
-        })
+        });
     } catch (error) {
-
-        res.status(500).json({ error: 'Internal server error' })
+        console.error(error); // Always log errors in catch
+        res.status(500).json({ error: 'Internal server error' });
     }
-}
+};
+
 
 
 
