@@ -1,0 +1,208 @@
+const pool = require('../db/db');
+
+exports.addblog = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const { case_title, blogs } = req.body;
+
+        if (!case_title || !blogs) {
+            return res.status(400).json({
+                statusCode: 400,
+                message: 'case_title and blogs are required',
+            });
+        }
+
+        // Parse blog data 
+        const blogData = Array.isArray(blogs) ? blogs : JSON.parse(blogs);
+        const files = req.files;
+
+        if (!Array.isArray(blogData) || blogData.length === 0) {
+            return res.status(400).json({
+                statusCode: 400,
+                message: 'blogs must be a non-empty array',
+            });
+        }
+
+        if (!files || files.length < blogData.length) {
+            return res.status(400).json({
+                statusCode: 400,
+                message: 'Number of uploaded images must match number of blogs',
+            });
+        }
+
+        // Begin transaction
+        await client.query('BEGIN');
+
+        // Insert into tbl_blogs
+        const blogQuery = `
+            INSERT INTO public.tbl_blogs (case_title)
+            VALUES ($1)
+            RETURNING blog_id
+        `;
+        const blogResult = await client.query(blogQuery, [case_title]);
+        const blog_id = blogResult.rows[0].blog_id;
+
+        // Insert each blog_data row
+        for (let i = 0; i < blogData.length; i++) {
+            const { title, description } = blogData[i];
+            const blog_image = files[i] ? `uploads/${files[i].filename}` : null;
+
+            await client.query(
+                `INSERT INTO public.tbl_blogs_data (
+                    title,
+                    description,
+                    blog_image,
+                    blog_id
+                ) VALUES ($1, $2, $3, $4)`,
+                [title, description, blog_image, blog_id]
+            );
+
+            // attach blog_image for response
+            blogData[i].blog_image = blog_image;
+        }
+
+        await client.query('COMMIT');
+
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Blogs added successfully',
+            blog: {
+                blog_id,
+                case_title,
+                blogsdata: blogData
+            }
+        });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Internal Server Error',
+        });
+    } finally {
+        client.release();
+    }
+};
+
+
+exports.getAllBlogs = async (req, res) => {
+    try {
+        const blogsQuery = `SELECT * FROM tbl_blogs`;
+        const blogsResult = await pool.query(blogsQuery);
+
+        const allBlogs = [];
+
+        for (const blog of blogsResult.rows) {
+            const blogDataQuery = `SELECT * FROM tbl_blogs_data WHERE blog_id = $1`;
+            const blogDataResult = await pool.query(blogDataQuery, [blog.blog_id]);
+
+            allBlogs.push({
+                ...blog,
+                blog_data: blogDataResult.rows
+            });
+        }
+
+        res.status(200).json({
+            statusCode: 200,
+            blogs: allBlogs
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ statusCode: 500, message: 'Internal Server Error' });
+    }
+};
+
+
+exports.getBlogById = async (req, res) => {
+    try {
+        const { blog_id } = req.body;
+
+        const blogQuery = `SELECT * FROM tbl_blogs WHERE blog_id = $1`;
+        const blogResult = await pool.query(blogQuery, [blog_id]);
+
+        if (blogResult.rows.length === 0) {
+            return res.status(404).json({ statusCode: 404, message: 'Blog not found' });
+        }
+
+        const blogDataQuery = `SELECT * FROM tbl_blogs_data WHERE blog_id = $1`;
+        const blogDataResult = await pool.query(blogDataQuery, [blog_id]);
+
+        res.status(200).json({
+            statusCode: 200,
+            blog: {
+                ...blogResult.rows[0],
+                blog_data: blogDataResult.rows
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ statusCode: 500, message: 'Internal Server Error' });
+    }
+};
+
+
+exports.updateBlog = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const { blog_id } = req.body;
+        const { case_title, blogs } = req.body;
+        const blogData = Array.isArray(blogs) ? blogs : JSON.parse(blogs);
+        const files = req.files;
+
+        await client.query('BEGIN');
+
+        await client.query(`UPDATE tbl_blogs SET case_title = $1 WHERE blog_id = $2`, [case_title, blog_id]);
+
+        // Delete existing blog data
+        await client.query(`DELETE FROM tbl_blogs_data WHERE blog_id = $1`, [blog_id]);
+
+        // Re-insert new data
+        for (let i = 0; i < blogData.length; i++) {
+            const { title, description } = blogData[i];
+            const blog_image = files[i] ? `uploads/${files[i].filename}` : null;
+
+            await client.query(
+                `INSERT INTO tbl_blogs_data (title, description, blog_image, blog_id)
+                VALUES ($1, $2, $3, $4)`,
+                [title, description, blog_image, blog_id]
+            );
+        }
+
+        await client.query('COMMIT');
+
+        res.status(200).json({ statusCode: 200, message: 'Blog updated successfully' });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(500).json({ statusCode: 500, message: 'Internal Server Error' });
+    } finally {
+        client.release();
+    }
+};
+
+
+exports.deleteBlog = async (req, res) => {
+    try {
+        const { blog_id } = req.body;
+
+        // First delete blog_data
+        await pool.query(`DELETE FROM tbl_blogs_data WHERE blog_id = $1`, [blog_id]);
+
+        // Then delete blog
+        const deleteResult = await pool.query(`DELETE FROM tbl_blogs WHERE blog_id = $1`, [blog_id]);
+
+        if (deleteResult.rowCount === 0) {
+            return res.status(404).json({ statusCode: 404, message: 'Blog not found' });
+        }
+
+        res.status(200).json({ statusCode: 200, message: 'Blog deleted successfully' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ statusCode: 500, message: 'Internal Server Error' });
+    }
+};

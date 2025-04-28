@@ -193,7 +193,7 @@ exports.updateCase = async (req, res) => {
         if (result.rowCount === 0) {
             return res.status(404).json({
                 statusCode: 404,
-                message: 'Category Not Found',
+                message: 'Case Not Found',
             });
         }
 
@@ -246,7 +246,7 @@ exports.deleteCase = async (req, res) => {
 
         res.status(200).json({
             statusCode: 200,
-            message: 'Category deleted successfully',
+            message: 'Case deleted successfully',
             deleteCase: deleteCase.rows[0],
         });
 
