@@ -10,6 +10,7 @@ const eventRoute=require('./routes/eventroutes');
 const adsRoutes=require('./routes/adsroutes');
 const blogRoutes=require('./routes/blogroutes');
 const contactRoutes=require('./routes/contactroutes');
+const galleryRoutes=require('./routes/galleryroutes');
 
  
  
@@ -26,6 +27,7 @@ app.use('/event',eventRoute);
 app.use('/ads',adsRoutes);
 app.use('/blog',blogRoutes);
 app.use('/contact',contactRoutes);
+app.use('/gallery',galleryRoutes);
 
 
 app.listen(5000, () => {
