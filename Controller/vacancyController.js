@@ -11,11 +11,13 @@ exports.getVacancyById = async (req, res) => {
         const vacant = await pool.query("Select * From tbl_vacancy where vacancy_id=$1", [vacancy_id]);
         if (vacant.rows.length === 0) {
             return res.status(400).json({
+                statusCode:400,
                 message: `Vacancy not found with Id ${vacancy_id}`
             })
         }
         else {
             return res.status(200).json({
+            statusCode:200,
             message: "successfull fetched the Data",
             Vacancy: vacant.rows[0]
         })
@@ -23,6 +25,7 @@ exports.getVacancyById = async (req, res) => {
     }
     catch (err) {
         return res.status(500).json({
+            statusCode:500,
             message: `internal server error ${err}`
         })
     }
@@ -35,6 +38,7 @@ exports.updateVacancy = async (req, res) => {
     // Check if vacancy_id is valid
     if (isNaN(vacancy_id)) {
         return res.status(400).json({
+            statusCode:400,
             message: "Invalid Vacancy ID"
         });
     }
@@ -42,6 +46,7 @@ exports.updateVacancy = async (req, res) => {
     // Validation: Ensure all required fields are present
     if (!vacancy_title && !name_of_employment && !number_of_vacancy) {
         return res.status(400).json({
+            statusCode:400,
             message: "Required fields are missing"
         });
     }
@@ -49,6 +54,7 @@ exports.updateVacancy = async (req, res) => {
     // Ensure `number_of_vacancy` is a valid integer
     if (isNaN(number_of_vacancy)) {
         return res.status(400).json({
+            statusCode:400,
             message: "number_of_vacancy should be an integer"
         });
     }
@@ -66,12 +72,14 @@ exports.updateVacancy = async (req, res) => {
         // If no rows were affected, that means the vacancy wasn't found
         if (result.rows.length === 0) {
             return res.status(404).json({
+                statusCode:404,
                 message: `Vacancy with ID ${vacancy_id} not found`
             });
         }
 
         // Return the updated vacancy
         return res.status(200).json({
+            statusCode:200,
             message: "Vacancy updated successfully",
             updatedVacancy: result.rows[0]
         });
@@ -79,6 +87,7 @@ exports.updateVacancy = async (req, res) => {
         // Handle errors
         console.error("Error while updating vacancy:", err);
         return res.status(500).json({
+            statusCode:500,
             message: "An error occurred while updating the vacancy",
             err: err.message
         });
@@ -92,6 +101,7 @@ exports.deleteVacancy = async (req, res) => {
     // Check if the vacancy_id is a valid integer
     if (isNaN(vacancy_id)) {
         return res.status(400).json({
+            statusCode:400,
             message: "Invalid vacancy ID"
         });
     }
@@ -106,12 +116,14 @@ exports.deleteVacancy = async (req, res) => {
         // If no rows were affected, that means the vacancy wasn't found
         if (result.rows.length === 0) {
             return res.status(404).json({
+                statusCode:404,
                 message: "Vacancy not found"
             });
         }
 
         // Return a success response
         return res.status(200).json({
+            statusCode:200,
             message: "Vacancy deleted successfully",
             deletedVacancy: result.rows[0]
         });
@@ -119,6 +131,7 @@ exports.deleteVacancy = async (req, res) => {
         // Handle errors
         console.error("Error while deleting vacancy:", err);
         return res.status(500).json({
+            statusCode:500,
             message: "An error occurred while deleting the vacancy",
             err: err.message
         });
@@ -134,12 +147,14 @@ exports.getAllVacancyData = async (req, res) => {
         // If no vacancies found, return an empty array
         if (result.rows.length === 0) {
             return res.status(404).json({
+                statusCode:404,
                 message: "No vacancies found"
             });
         }
 
         // Return the retrieved vacancies
         return res.status(200).json({
+            statusCode:200,
             message: "Vacancies fetched successfully",
             vacancies: result.rows
         });
@@ -147,6 +162,7 @@ exports.getAllVacancyData = async (req, res) => {
         // Handle errors
         console.error("Error while fetching vacancies:", err);
         return res.status(500).json({
+            statusCode:500,
             message: "An error occurred while fetching vacancies",
             err: err.message
         });
@@ -159,6 +175,7 @@ exports.addVacancy = async (req, res) => {
     // Validation: Check if all required fields are present
     if (!vacancy_title || !name_of_employment || !number_of_vacancy) {
         return res.status(400).json({
+            statusCode:400,
             message: "Required fields are missing"
         });
     }
@@ -166,6 +183,7 @@ exports.addVacancy = async (req, res) => {
     // Ensure `number_of_vacancy` is a valid integer
     if (isNaN(number_of_vacancy)) {
         return res.status(400).json({
+            statusCode:400,
             message: "number_of_vacancy should be an integer"
         });
     }
@@ -179,7 +197,8 @@ exports.addVacancy = async (req, res) => {
         );
 
         // Return the newly created vacancy data
-        return res.status(201).json({
+        return res.status(200).json({
+            statusCode:200,
             message: "Vacancy Created Successfully",
             vacancy: vacancy.rows[0]
         });
