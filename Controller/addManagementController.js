@@ -2,47 +2,67 @@ const pool = require('../db/db');
 
 exports.adsmanagement = async (req, res) => {
     try {
+        const { ads_display, start_date, expiry_date } = req.body;
 
-       
+        // Convert from DD/MM/YYYY to YYYY-MM-DD
+        const formatDate = (inputDate) => {
+            const [day, month, year] = inputDate.split('/');
+            return `${year}-${month}-${day}`;
+        };
+
+        const formattedStartDate = formatDate(start_date);
+        const formattedExpiryDate = formatDate(expiry_date);
+
         const addsimage = req.files?.ads_image?.[0]?.filename
             ? `uploads/${req.files.ads_image[0].filename}`
-            : null
+            : null;
 
-            if (!addsimage) {
-                return res.status(400).json({
-                    statusCode: 400,
-                    message: 'ads_image file is required'
-                });
-            }
-        const ads = await pool.query(`INSERT INTO public.tbl_ads(ads_image) values($1) RETURNING *`,
-            [addsimage]);  
+        const ads = await pool.query(
+            `INSERT INTO public.tbl_ads (ads_image, ads_display, start_date, expiry_date) VALUES ($1, $2, $3, $4) RETURNING *`,
+            [addsimage, ads_display, formattedStartDate, formattedExpiryDate]
+        );
 
         res.status(200).json({
             statusCode: 200,
-            message: 'ads Image Added sucessfully',
-            ads: ads.rows[0]   
-        })
+            message: 'Ads image added successfully',
+            ads: ads.rows[0]
+        });
 
     } catch (error) {
+        console.error("Error in adsmanagement:", error);
         res.status(500).json({
-            statusCode: 'Internal Server error'
-        })
+            statusCode: 500,
+            message: 'Internal Server Error'
+        });
     }
-}
+};
+
 
 
 exports.getallads = async (req, res) => {
     try {
-        const allads = await pool.query("SELECT * FROM tbl_ads");
+        const allads = await pool.query(`
+            SELECT * FROM tbl_ads
+            ORDER BY 
+                CASE 
+                    WHEN ads_display = 'Primary' THEN 1
+                    WHEN ads_display = 'Secondary' THEN 2
+                    ELSE 3
+                END,
+                expiry_date ASC
+        `);
+
         res.status(200).json({
             statusCode: 200,
-            message: 'Ads Fetched Sucessfully',
+            message: 'Ads Fetched Successfully',
             ads: allads.rows,
-        })
+        });
     } catch (err) {
-        res.status(500).json({ message: 'Internal Server error' })
+        console.error("Error fetching ads:", err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-}
+};
+
 
 exports.getadsByid = async (req, res) => {
     try {
@@ -73,73 +93,96 @@ exports.getadsByid = async (req, res) => {
 }
 
 
-exports.updateads= async (req, res) => {
+exports.updateads = async (req, res) => {
     try {
-        const { ads_id } = req.body;  
+        const { ads_id, ads_display, start_date, expiry_date } = req.body;
+
         const fields = [];
         const values = [];
         let index = 1;
- 
+
         if (!ads_id) {
             return res.status(400).json({
                 statusCode: 400,
-                message: 'Ads ID is required for updating'
+                message: 'Ads ID is required for updating',
             });
         }
 
-        
+        // Format date from DD/MM/YYYY to YYYY-MM-DD if needed
+        const formatDate = (date) => {
+            if (!date || date.includes('-')) return date; // already formatted
+            const [day, month, year] = date.split('/');
+            return `${year}-${month}-${day}`;
+        };
+
+        const formattedStartDate = formatDate(start_date);
+        const formattedExpiryDate = formatDate(expiry_date);
+
+        // Check for image
         const adsImage = req.files?.ads_image?.[0]?.filename
             ? `uploads/${req.files.ads_image[0].filename}`
             : null;
 
-       
         if (adsImage) {
-            fields.push(`"ads_image"=$${index++}`);
+            fields.push(`"ads_image" = $${index++}`);
             values.push(adsImage);
         }
 
-        values.push(ads_id);  
+        if (ads_display) {
+            fields.push(`"ads_display" = $${index++}`);
+            values.push(ads_display);
+        }
 
-       
+        if (formattedStartDate) {
+            fields.push(`"start_date" = $${index++}`);
+            values.push(formattedStartDate);
+        }
+
+        if (formattedExpiryDate) {
+            fields.push(`"expiry_date" = $${index++}`);
+            values.push(formattedExpiryDate);
+        }
+
+        // Final condition
         if (fields.length === 0) {
             return res.status(400).json({
                 statusCode: 400,
-                message: 'No fields provided to update'
+                message: 'No fields provided to update',
             });
         }
 
-      
+        values.push(ads_id); // for WHERE condition
+
         const query = `
             UPDATE public.tbl_ads
             SET ${fields.join(', ')}
-            WHERE "ads_id"=$${index}
+            WHERE "ads_id" = $${index}
             RETURNING *`;
 
         const result = await pool.query(query, values);
 
-      
         if (result.rowCount === 0) {
             return res.status(404).json({
                 statusCode: 404,
-                message: 'Ads image not found'
+                message: 'Ad not found',
             });
         }
 
-        // Success response
         res.status(200).json({
             statusCode: 200,
-            message: 'Ads updated successfully',
+            message: 'Ad updated successfully',
             ads: result.rows[0],
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Error in updateads:", error);
         res.status(500).json({
             statusCode: 500,
             message: 'Internal Server Error',
         });
     }
 };
+
 
 
 exports.deleteAds = async (req, res) => {
