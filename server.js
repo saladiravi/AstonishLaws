@@ -36,11 +36,15 @@ app.listen(5000, () => {
     console.log("Server is running on port 5000");
 });
 
-cron.schedule('0 0 * * *', async () => {
+
+cron.schedule('* * * * *', async () => {
+  
   try {
-    await pool.query(`DELETE FROM tbl_ads WHERE expiry_date <= CURRENT_DATE`);
-    console.log("✅ Expired ads deleted at midnight.");
+    const result = await pool.query(`
+      DELETE FROM tbl_ads WHERE expiry_date <= CURRENT_DATE RETURNING *;
+    `);
+    
   } catch (err) {
-    console.error("❌ Error deleting expired ads:", err);
+    console.error("❌ Error deleting expired ads:", err.message);
   }
 });
