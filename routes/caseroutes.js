@@ -12,6 +12,8 @@ router.post('/updatecase',upload.fields([
     {name:'case_image',maxCount:1}]),casecontroller.updateCase);
 
 router.post('/deletecase',casecontroller.deleteCase);
-
+router.get('/getUniqueCase',casecontroller.getUniqueCases);
+router.post('/getCaseByCateogary',casecontroller.getCasesByCategory);
 
 module.exports=router
+ 

@@ -72,6 +72,52 @@ exports.getallCases = async (req, res) => {
     }
 }
 
+exports.getUniqueCases = async (req, res) => {
+    try {
+        const uniqueCases = await pool.query(`
+            SELECT DISTINCT ON (case_category) * 
+            FROM tbl_cases
+            ORDER BY case_category, case_id
+        `);
+
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Unique Case Categories Fetched Successfully',
+            cases: uniqueCases.rows,
+        });
+    } catch (err) {
+        console.error("Error fetching unique cases:", err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+exports.getCasesByCategory = async (req, res) => {
+    try {
+        const { case_category } = req.body;
+
+        const result = await pool.query(
+            "SELECT * FROM tbl_cases WHERE case_category = $1",
+            [case_category]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                statusCode: 404,
+                message: 'No cases found for this category',
+            });
+        }
+
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Cases fetched successfully',
+            cases: result.rows,
+        });
+    } catch (err) {
+        console.error("Error fetching cases by category:", err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 exports.getcasesByid = async (req, res) => {
     try {
         const { case_id } = req.body;
