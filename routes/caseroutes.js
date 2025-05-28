@@ -15,5 +15,5 @@ router.post('/deletecase',casecontroller.deleteCase);
 router.get('/getUniqueCase',casecontroller.getUniqueCases);
 router.post('/getCaseByCateogary',casecontroller.getCasesByCategory);
 
-module.exports=router 
+module.exports=router  
  
