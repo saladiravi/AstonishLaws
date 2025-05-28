@@ -14,7 +14,8 @@ const blogRoutes=require('./routes/blogroutes');
 const contactRoutes=require('./routes/contactroutes');
 const galleryRoutes=require('./routes/galleryroutes');
 const vacancyRoutes=require('./routes/vacancyroutes');
- 
+const mailRoutes=require('./routes/mailroutes');
+
  
 const app = express();
 
@@ -31,6 +32,8 @@ app.use('/blog',blogRoutes);
 app.use('/contact',contactRoutes);
 app.use('/gallery',galleryRoutes);
 app.use('/vacancy',vacancyRoutes);
+app.use('/mail',mailRoutes);
+
 
 app.listen(5000, () => {
     console.log("Server is running on port 5000");
