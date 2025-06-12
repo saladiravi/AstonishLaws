@@ -20,7 +20,10 @@ const casesRoutes=require('./routes/casesroutes');
 const ourTeamRoutes=require('./routes/ourteamroutes');
 const clientReviewRoutes=require('./routes/clientreviewsroutes');
 const faqRoutes=require('./routes/faqroutes');
- 
+const casedetails=require('./routes/casedetailsroutes');
+
+
+
 const app = express();
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
@@ -42,6 +45,7 @@ app.use('/cases',casesRoutes);
 app.use('/clientreview',clientReviewRoutes);
 app.use('/ourteam',ourTeamRoutes);
 app.use('/faqs',faqRoutes);
+app.use('/casedetails',casedetails);
 
 
 
