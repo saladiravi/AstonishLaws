@@ -19,7 +19,7 @@ const casecategoryRoutes=require('./routes/caseCategoryroutes');
 const casesRoutes=require('./routes/casesroutes');
 const ourTeamRoutes=require('./routes/ourteamroutes');
 const clientReviewRoutes=require('./routes/clientreviewsroutes');
-
+const faqRoutes=require('./routes/faqroutes');
  
 const app = express();
 
@@ -41,6 +41,7 @@ app.use('/caseCategory',casecategoryRoutes);
 app.use('/cases',casesRoutes);
 app.use('/clientreview',clientReviewRoutes);
 app.use('/ourteam',ourTeamRoutes);
+app.use('/faqs',faqRoutes);
 
 
 

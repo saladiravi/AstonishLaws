@@ -3,7 +3,7 @@ const pool = require('../db/db');
 
 
 exports.addContact = async (req, res) => {
-    const { email, ph_number, address } = req.body;
+    const { email, ph_number, address ,altphunumber1,altphNumber2} = req.body;
 
     try {
         if (!email || !ph_number || !address) {
@@ -14,9 +14,11 @@ exports.addContact = async (req, res) => {
             `INSERT INTO public.tbl_contact (
                 email,
                 ph_number,
-                address
-            ) VALUES ($1, $2, $3) RETURNING *`,
-            [email, ph_number, address]
+                address,
+                altphunumber1,
+                altphNumber2
+            ) VALUES ($1, $2, $3,$4,$5) RETURNING *`,
+            [email, ph_number, address,altphunumber1,altphNumber2]
         );
 
         res.status(200).json({
@@ -25,7 +27,7 @@ exports.addContact = async (req, res) => {
             contact: contact.rows[0],
         });
     } catch (error) {
-        console.error(error); // Always log errors in catch
+        
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -78,7 +80,7 @@ exports.getcontactByid = async (req, res) => {
 
 exports.updateContact = async (req, res) => {
     try {
-        const { contact_id,email, ph_number, address } = req.body;
+        const { contact_id,email, ph_number, address,altphunumber1,altphNumber2 } = req.body;
 
 
 
@@ -109,8 +111,15 @@ exports.updateContact = async (req, res) => {
             fields.push(`"address"=$${index++}`);
             values.push(address);
         }
-
-
+      
+         if(altphunumber1){
+            fields.push(`"altphunumber1"=$${index++}`);
+            values.push(altphunumber1)
+         }
+         if(altphNumber2){
+            fields.push(`"altphunumber2"=$${index++}`);
+            values.push(altphNumber2)
+         }
         values.push(contact_id);
 
         if (fields.length === 0) {
