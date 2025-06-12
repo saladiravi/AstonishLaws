@@ -22,7 +22,7 @@ exports.addClientreview = async (req, res) => {
         return res.status(200).json({
             statusCode:200,
             message: "Reviews Added Successfully",
-            review: reviews.rows[0]
+            reviews: reviews.rows[0]
         });
     } catch (error) {
         console.error(error)
@@ -173,13 +173,12 @@ exports.getAllReviewsData = async (req, res) => {
         return res.status(200).json({
             statusCode:200,
             message: "Reviews fetched successfully",
-            vacancies: result.rows
+            reviews: result.rows
         });
-    } catch (err) {
-   
-        return res.status(500).json({
+    } catch (error) {
+     return res.status(500).json({
             message: "Internal Server Error",
-            err: err.message
+        
         });
     }
 };
