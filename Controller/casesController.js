@@ -1,7 +1,7 @@
 const pool = require('../db/db')
  
 exports.addCaseTitle = async (req, res) => {
-    const { case_title_name, case_id } = req.body;
+    const { case_title_name, case_category_id } = req.body;
  
     if (!case_title_name) {
         return res.status(404).json({ message: "case title is not Found" })
@@ -10,18 +10,17 @@ exports.addCaseTitle = async (req, res) => {
    
     try {
  
-        const cases = await pool.query(`INSERT INTO tbl_case_title(case_title_name, case_id) VALUES($1, $2) RETURNING * `, [case_title_name, case_id]);
+        const cases = await pool.query(`INSERT INTO tbl_cases(case_title_name, case_category_id) VALUES($1, $2) RETURNING * `, [case_title_name, case_category_id]);
  
  
-        return res.status(201).json({
+        return res.status(200).json({
             statusCode: 200,
-            message: "Case Title Created",
+            message: "Sucessfully Add Case",
             case: cases.rows[0]
         })
-    } catch (err) {
-        console.log(err)
-        return res.status(500).json({
-            message: "Server error",
+    } catch (error) {
+         return res.status(500).json({
+            message: "Internal Server Error",
             statusCode: 500
         })
     }
@@ -33,7 +32,7 @@ exports.deleteCaseTitle = async (req, res) => {
     if (!case_title_id) {
         return res.status(404).json({
             statusCode: 404,
-            message: "not found case title id",
+            message: "Not found case title",
             
         })
     }
@@ -76,12 +75,12 @@ exports.deleteCaseTitle = async (req, res) => {
  
  
 exports.updateCaseTitle = async (req, res) => {
-    const { case_title_name, case_id, case_title_id } = req.body;
+    const { case_title_name, case_category_id, case_title_id } = req.body;
  
-    // Validation: case_title_id is required, and at least one of case_title_name or case_id
-    if (!case_title_id || (!case_title_name && !case_id)) {
+    // Validation: case_title_id is required, and at least one of case_title_name or case_category_id
+    if (!case_title_id || (!case_title_name && !case_category_id)) {
         return res.status(400).json({
-            message: "case_title_id is required, and either case_title_name or case_id must be provided.",
+            message: "case_title_id is required, and either case_title_name or case_category_id must be provided.",
             statusCode: 400
         });
     }
@@ -97,9 +96,9 @@ exports.updateCaseTitle = async (req, res) => {
             values.push(case_title_name);
         }
  
-        if (case_id) {
-            fields.push(`case_id = $${index++}`);
-            values.push(case_id);
+        if (case_category_id) {
+            fields.push(`case_category_id = $${index++}`);
+            values.push(case_category_id);
         }
  
         values.push(case_title_id); // for WHERE clause
@@ -139,7 +138,7 @@ exports.getAllCaseTitles = async (req, res) => {
  
     try {
  
-        const cases = await pool.query("SELECT ct.case_title_id, ct.case_title_name,ct.case_id, c.case_name  FROM tbl_case_title ct JOIN tbl_case c ON ct.case_id=c.case_id");
+        const cases = await pool.query("SELECT ct.case_title_id, ct.case_title_name,ct.case_category_id, c.case_name  FROM tbl_case_title ct JOIN tbl_case c ON ct.case_category_id=c.case_category_id");
  
         if (!cases || cases.rows.length === 0) {
             return res.status(404).json({
@@ -177,7 +176,7 @@ exports.getCaseTitleById = async (req, res) => {
  
     try {
  
-        const cases = await pool.query("SELECT ct.case_title_id, ct.case_title_name,ct.case_id, c.case_name FROM tbl_case_title ct JOIN tbl_case c on ct.case_id=c.case_id where case_title_id=$1", [case_title_id])
+        const cases = await pool.query("SELECT ct.case_title_id, ct.case_title_name,ct.case_category_id, c.case_name FROM tbl_case_title ct JOIN tbl_case c on ct.case_category_id=c.case_category_id where case_title_id=$1", [case_title_id])
  
         if (!cases || cases.rows.length === 0) {
             return res.status(404).json({
@@ -185,7 +184,7 @@ exports.getCaseTitleById = async (req, res) => {
             })
         }
         return res.status(200).json({
-            message: "Successfully fetched case title",
+            message: "Successfully fetched Cases",
             statusCode: 200,
             case: cases.rows[0]
         })
