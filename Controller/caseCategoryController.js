@@ -19,7 +19,7 @@ exports.addcasecategory = async (req, res) => {
  
  
             const cases = await pool.query(
-                `INSERT INTO public.tbl_case_cateogry (
+                `INSERT INTO public.tbl_case_category (
                   case_name,
                   case_image
                 ) VALUES ($1, $2) RETURNING *`,
@@ -53,9 +53,9 @@ exports.addcasecategory = async (req, res) => {
 exports.getCasesById = async (req, res) => {
     try {
       const { case_category_id } = req.body;
-console.log(case_category_id);
+ 
         const data = await pool.query(
-            "SELECT * FROM tbl_case_cateogry WHERE case_category_id=$1",
+            "SELECT * FROM tbl_case_category WHERE case_category_id=$1",
             [case_category_id]
         );
  
@@ -135,7 +135,7 @@ if (case_name) {
         }
  
         const query = `
-            UPDATE tbl_case_cateogry
+            UPDATE tbl_case_category
             SET ${fields.join(', ')}
             WHERE "case_category_id"=$${index}
             RETURNING *`;
@@ -179,7 +179,7 @@ exports.deleteCase = async (req, res) => {
  
  
         const checkCase = await pool.query(
-            'SELECT * FROM tbl_case_cateogry WHERE case_category_id = $1',
+            'SELECT * FROM tbl_case_category WHERE case_category_id = $1',
             [case_category_id]
         );
  
@@ -192,7 +192,7 @@ exports.deleteCase = async (req, res) => {
  
  
         const deleteCase = await pool.query(
-            'DELETE FROM tbl_case_cateogry WHERE case_category_id = $1 RETURNING *',
+            'DELETE FROM tbl_case_category WHERE case_category_id = $1 RETURNING *',
             [case_category_id]
         );
  
@@ -215,7 +215,7 @@ exports.deleteCase = async (req, res) => {
 
 exports.getallcaseCategory = async (req, res) => {
     try {
-        const allcases = await pool.query("SELECT * FROM tbl_case_cateogry");
+        const allcases = await pool.query("SELECT * FROM tbl_case_category");
         res.status(200).json({
             statusCode: 200,
             message: 'Case Fetched Sucessfully',
