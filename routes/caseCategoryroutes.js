@@ -4,7 +4,7 @@ const router=express.Router();
 const upload=require('../utils/fileupload');
  
 router.post('/addcase',upload.fields([
-    {name:'case_image',maxCount:1}]),caseController.addCase);
+    {name:'case_image',maxCount:1}]),caseController.addcasecategory);
  
 router.get('/getallcases',caseController.getallcaseCategory);
 router.get('/getcasesbyId',caseController.getCasesById);
