@@ -135,34 +135,39 @@ exports.updateCaseTitle = async (req, res) => {
 };
  
 exports.getAllCaseTitles = async (req, res) => {
- 
     try {
- 
-        const cases = await pool.query("SELECT ct.case_id, ct.case_title_name,ct.case_category_id, c.case_name  FROM tbl_cases ct JOIN tbl_case_category c ON ct.case_category_id=c.case_category_id");
- 
+        const cases = await pool.query(`
+            SELECT 
+              ct.case_id, 
+              ct.case_title_name,
+              ct.case_category_id, 
+              c.case_name  
+            FROM tbl_cases ct 
+            JOIN tbl_case_category c 
+            ON ct.case_category_id = c.case_category_id
+        `);
+
         if (!cases || cases.rows.length === 0) {
             return res.status(404).json({
                 message: "Cases are not found",
                 statusCode: 404
-            })
+            });
         }
- 
+
         return res.status(200).json({
             message: "Successfully fetched Cases title",
             statusCode: 200,
             cases: cases.rows
-        })
- 
-    }
-    catch (err) {
-        
+        });
+
+    } catch (err) {
         return res.status(500).json({
             message: "server error",
             statusCode: 500
-        }
-        )
+        });
     }
 }
+
  
 exports.getCaseTitleById = async (req, res) => {
     const { case_id } = req.body;
