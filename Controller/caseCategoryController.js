@@ -19,7 +19,7 @@ exports.addcasecategory = async (req, res) => {
  
  
             const cases = await pool.query(
-                `INSERT INTO public.tbl_case (
+                `INSERT INTO public.tbl_case_cateogry (
                   case_name,
                   case_image
                 ) VALUES ($1, $2) RETURNING *`,
@@ -52,13 +52,13 @@ exports.addcasecategory = async (req, res) => {
  
 exports.getCasesById = async (req, res) => {
     try {
-      const { case_id } = req.body;
-console.log(case_id);
+      const { case_category_id } = req.body;
+console.log(case_category_id);
         const data = await pool.query(
-            "SELECT * FROM tbl_case WHERE case_id=$1",
-            [case_id]
+            "SELECT * FROM tbl_case_cateogry WHERE case_category_id=$1",
+            [case_category_id]
         );
-console.log(1);
+ 
         if (data.rows.length === 0) {
             return res.status(404).json({
                 statusCode: 404,
@@ -87,7 +87,7 @@ console.log(1);
  
 exports.updateCase = async (req, res) => {
     try {
-        const { case_id, case_name } = req.body;
+        const { case_category_id, case_name } = req.body;
         let caseimage = null;
  
        
@@ -96,7 +96,7 @@ exports.updateCase = async (req, res) => {
         }
  
        
-        if (!case_id) {
+        if (!case_category_id) {
             return res.status(400).json({
                 statusCode: 400,
                 message: 'Case ID is required',
@@ -125,7 +125,7 @@ if (case_name) {
      
  
  
-        values.push(case_id);
+        values.push(case_category_id);
  
         if (fields.length === 0) {
             return res.status(400).json({
@@ -135,9 +135,9 @@ if (case_name) {
         }
  
         const query = `
-            UPDATE tbl_case
+            UPDATE tbl_case_cateogry
             SET ${fields.join(', ')}
-            WHERE "case_id"=$${index}
+            WHERE "case_category_id"=$${index}
             RETURNING *`;
  
         const result = await pool.query(query, values);
@@ -168,9 +168,9 @@ if (case_name) {
  
 exports.deleteCase = async (req, res) => {
     try {
-        const { case_id } = req.body;
+        const { case_category_id } = req.body;
  
-        if (!case_id) {
+        if (!case_category_id) {
             return res.status(400).json({
                 statusCode: 400,
                 message: 'Case ID is required',
@@ -179,8 +179,8 @@ exports.deleteCase = async (req, res) => {
  
  
         const checkCase = await pool.query(
-            'SELECT * FROM tbl_case WHERE case_id = $1',
-            [case_id]
+            'SELECT * FROM tbl_case_cateogry WHERE case_category_id = $1',
+            [case_category_id]
         );
  
         if (checkCase.rows.length === 0) {
@@ -192,8 +192,8 @@ exports.deleteCase = async (req, res) => {
  
  
         const deleteCase = await pool.query(
-            'DELETE FROM tbl_case WHERE case_id = $1 RETURNING *',
-            [case_id]
+            'DELETE FROM tbl_case_cateogry WHERE case_category_id = $1 RETURNING *',
+            [case_category_id]
         );
  
         res.status(200).json({
@@ -215,7 +215,7 @@ exports.deleteCase = async (req, res) => {
 
 exports.getallcaseCategory = async (req, res) => {
     try {
-        const allcases = await pool.query("SELECT * FROM tbl_case");
+        const allcases = await pool.query("SELECT * FROM tbl_case_cateogry");
         res.status(200).json({
             statusCode: 200,
             message: 'Case Fetched Sucessfully',
