@@ -7,7 +7,7 @@ exports.addcasecategory = async (req, res) => {
  
     try {
         if (!case_name) {
-            return res.status(400).json({ error: 'case_name required' });
+            return res.status(400).json({ error: 'case name required' });
  
         }
  
