@@ -9,7 +9,7 @@ router.post('/addcase',upload.fields([
 router.get('/getallcases',caseController.getallcaseCategory);
 router.get('/getcasesbyId',caseController.getCasesById);
 router.post('/updatecase',upload.fields([
-      {name:'case_image',maxCount:1}]),caseController.updateCase) ;
+      {name:'case_image',maxCount:1}]),caseController.updateCase);
    router.post("/deleteCase",caseController.deleteCase);
  
  
