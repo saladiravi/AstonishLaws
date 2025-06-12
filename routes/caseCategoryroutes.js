@@ -10,7 +10,7 @@ router.get('/getallcases',caseController.getallcaseCategory);
 router.get('/getcasesbyId',caseController.getCasesById);
 router.post('/updatecase',upload.fields([
       {name:'case_image',maxCount:1}]),caseController.updateCase) ;
-   router.delete("/deleteCase",caseController.deleteCase);
+   router.post("/deleteCase",caseController.deleteCase);
  
  
 module.exports=router
