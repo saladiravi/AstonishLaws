@@ -39,7 +39,7 @@ exports.deleteCaseTitle = async (req, res) => {
    try {
      
  
-        const cases = await pool.query("Delete from tbl_case_title where case_id=$1 RETURNING *", [case_id]);
+        const cases = await pool.query("Delete from tbl_cases where case_id=$1 RETURNING *", [case_id]);
        
         if (cases.rows.length === 0) {
  
@@ -78,9 +78,9 @@ exports.updateCaseTitle = async (req, res) => {
     const { case_title_name, case_category_id, case_id } = req.body;
  
     // Validation: case_id is required, and at least one of case_title_name or case_category_id
-    if (!case_id || (!case_title_name && !case_category_id)) {
+    if (!case_id ,case_category_id) {
         return res.status(400).json({
-            message: "case_id is required, and either case_title_name or case_category_id must be provided.",
+            message: "Required Filed missing",
             statusCode: 400
         });
     }
@@ -104,7 +104,7 @@ exports.updateCaseTitle = async (req, res) => {
         values.push(case_id); // for WHERE clause
  
         const updateQuery = `
-            UPDATE tbl_case_title
+            UPDATE tbl_cases
             SET ${fields.join(', ')}
             WHERE case_id = $${index}
             RETURNING *;
@@ -138,7 +138,7 @@ exports.getAllCaseTitles = async (req, res) => {
  
     try {
  
-        const cases = await pool.query("SELECT ct.case_id, ct.case_title_name,ct.case_category_id, c.case_name  FROM tbl_case_title ct JOIN tbl_case c ON ct.case_category_id=c.case_category_id");
+        const cases = await pool.query("SELECT ct.case_id, ct.case_title_name,ct.case_category_id, c.case_name  FROM tbl_cases ct JOIN tbl_case_category c ON ct.case_category_id=c.case_category_id");
  
         if (!cases || cases.rows.length === 0) {
             return res.status(404).json({
@@ -168,16 +168,23 @@ exports.getCaseTitleById = async (req, res) => {
     const { case_id } = req.body;
  
     if (!case_id) {
-        return res.status(404).json({
-            message: "required case title id",
-            statusCode: 404
+        return res.status(400).json({
+            message: "required case  id",
+            statusCode: 400
         })
     }
  
     try {
  
-        const cases = await pool.query("SELECT ct.case_id, ct.case_title_name,ct.case_category_id, c.case_name FROM tbl_case_title ct JOIN tbl_case c on ct.case_category_id=c.case_category_id where case_id=$1", [case_id])
- 
+     const cases = await pool.query(
+    `SELECT ct.case_id, ct.case_title_name, ct.case_category_id, c.case_name 
+     FROM tbl_cases ct 
+     JOIN tbl_case_category c 
+     ON ct.case_category_id = c.case_category_id 
+     WHERE ct.case_id = $1`, 
+     [case_id]
+);
+
         if (!cases || cases.rows.length === 0) {
             return res.status(404).json({
                 message: "Not Found case title"
