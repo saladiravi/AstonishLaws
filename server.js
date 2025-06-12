@@ -15,8 +15,6 @@ const contactRoutes=require('./routes/contactroutes');
 const galleryRoutes=require('./routes/galleryroutes');
 const vacancyRoutes=require('./routes/vacancyroutes');
 const mailRoutes=require('./routes/mailroutes');
-const casesRoute=require('./routes/caseroute')
-const caseTitleRoute=require('./routes/caseTitleRoute')
 const casecategoryRoutes=require('./routes/caseCategoryroutes');
 
  
@@ -36,8 +34,7 @@ app.use('/contact',contactRoutes);
 app.use('/gallery',galleryRoutes);
 app.use('/vacancy',vacancyRoutes);
 app.use('/mail',mailRoutes);
-app.use('/cases',casesRoute);
-app.use('/title',caseTitleRoute);
+ 
 app.use('/caseCategory',casecategoryRoutes);
 
 
