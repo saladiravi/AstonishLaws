@@ -14,8 +14,8 @@ exports.addCaseTitle = async (req, res) => {
  
  
         return res.status(201).json({
+            statusCode: 200,
             message: "Case Title Created",
-            statusCode: 201,
             case: cases.rows[0]
         })
     } catch (err) {
@@ -32,13 +32,12 @@ exports.deleteCaseTitle = async (req, res) => {
  
     if (!case_title_id) {
         return res.status(404).json({
+            statusCode: 404,
             message: "not found case title id",
-            statusCode: 404
+            
         })
     }
- 
- 
-    try {
+   try {
      
  
         const cases = await pool.query("Delete from tbl_case_title where case_title_id=$1 RETURNING *", [case_title_id]);
@@ -51,7 +50,6 @@ exports.deleteCaseTitle = async (req, res) => {
             })
  
         }
- 
  
         return res.status(200).json({
             message: "Deleted case title",
@@ -158,7 +156,7 @@ exports.getAllCaseTitles = async (req, res) => {
  
     }
     catch (err) {
-        console.log(err);
+        
         return res.status(500).json({
             message: "server error",
             statusCode: 500
@@ -193,7 +191,7 @@ exports.getCaseTitleById = async (req, res) => {
         })
     }
     catch (error) {
-        console.log(error);
+       
         return res.status(500).json({
             message: "server error",
             statusCode: 500
