@@ -7,7 +7,7 @@ const pool= require('./db/db');
  
 const adminRoutes = require('./routes/adminroutes');
 const carouselRoutes=require('./routes/carouselroutes');
-const caseRoutes=require('./routes/caseroutes');
+ 
 const eventRoute=require('./routes/eventroutes');
 const adsRoutes=require('./routes/adsroutes');
 const blogRoutes=require('./routes/blogroutes');
@@ -26,7 +26,7 @@ app.use(cors());
  
 app.use('/admin', adminRoutes);
 app.use('/carousel',carouselRoutes);
-app.use('/case',caseRoutes);
+ 
 app.use('/event',eventRoute);
 app.use('/ads',adsRoutes);
 app.use('/blog',blogRoutes);
