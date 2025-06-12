@@ -4,10 +4,13 @@ const express=require("express")
 const router=express.Router();
  
  
-router.post("/addCaseTitle", caseTitleController.addCaseTitle);
-router.delete("/deleteCaseTitle", caseTitleController.deleteCaseTitle)
-router.get("/getAllCaseTitles",caseTitleController.getAllCaseTitles)
-router.get("/getCaseTitleById",caseTitleController.getCaseTitleById)
-router.put('/updateCaseTitle',caseTitleController.updateCaseTitle)
+
+router.post('/addcase',caseTitleController.addCaseTitle);
+
+router.get('/getallcases',caseTitleController.getAllCaseTitles);
+router.post('/getcasesbyId',caseTitleController.getCaseTitleById)
+router.post('/updatecase',caseTitleController.updateCaseTitle) ;
+
+router.post('/deletecase',caseTitleController.deleteCaseTitle);
  
 module.exports=router;
