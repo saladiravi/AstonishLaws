@@ -3,7 +3,7 @@ const pool = require('../db/db');
 
 
 exports.addContact = async (req, res) => {
-    const { email, ph_number, address ,altphunumber1,altphunumber2} = req.body;
+    const { email, ph_number, address ,altphunumber1,altphnumber2} = req.body;
 
     try {
         if (!email || !ph_number || !address) {
@@ -16,9 +16,9 @@ exports.addContact = async (req, res) => {
                 ph_number,
                 address,
                 altphunumber1,
-                altphunumber2
+                altphnumber2
             ) VALUES ($1, $2, $3,$4,$5) RETURNING *`,
-            [email, ph_number, address,altphunumber1,altphunumber2]
+            [email, ph_number, address,altphunumber1,altphnumber2]
         );
 
         res.status(200).json({
@@ -80,7 +80,7 @@ exports.getcontactByid = async (req, res) => {
 
 exports.updateContact = async (req, res) => {
     try {
-        const { contact_id,email, ph_number, address,altphunumber1,altphunumber2 } = req.body;
+        const { contact_id,email, ph_number, address,altphunumber1,altphnumber2 } = req.body;
 
 
 
@@ -116,9 +116,9 @@ exports.updateContact = async (req, res) => {
             fields.push(`"altphunumber1"=$${index++}`);
             values.push(altphunumber1)
          }
-         if(altphunumber2){
-            fields.push(`"altphunumber2"=$${index++}`);
-            values.push(altphunumber2)
+         if(altphnumber2){
+            fields.push(`"altphnumber2"=$${index++}`);
+            values.push(altphnumber2)
          }
         values.push(contact_id);
 
