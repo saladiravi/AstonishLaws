@@ -78,7 +78,7 @@ exports.updateCaseTitle = async (req, res) => {
     const { case_title_name, case_category_id, case_id } = req.body;
  
     // Validation: case_id is required, and at least one of case_title_name or case_category_id
-    if (!case_id ,case_category_id) {
+    if (!case_id ) {
         return res.status(400).json({
             message: "Required Filed missing",
             statusCode: 400
@@ -125,8 +125,8 @@ exports.updateCaseTitle = async (req, res) => {
               data: result.rows[0]
         });
  
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.error(error);
         return res.status(500).json({
             message: "Server error",
             statusCode: 500
@@ -160,7 +160,8 @@ exports.getAllCaseTitles = async (req, res) => {
             cases: cases.rows
         });
 
-    } catch (err) {
+    } catch (error) {
+        console.error(error)
         return res.status(500).json({
             message: "server error",
             statusCode: 500
