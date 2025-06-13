@@ -132,12 +132,13 @@ exports.updateCalendar = async (req, res) => {
 
     try {
         const result = await pool.query(
-            `UPDATE tbl_calendar
-             SET image_path = $2
-             WHERE calendar_id = $1
-             RETURNING *`,
+                `UPDATE tbl_calendar
+                SET calendar_img = $2
+                WHERE calendar_id = $1
+                RETURNING *`,
             [calendar_id, calendar_img]
         );
+
 
         if (result.rows.length === 0) {
             return res.status(404).json({
