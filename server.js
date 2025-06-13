@@ -46,7 +46,7 @@ app.use('/clientreview',clientReviewRoutes);
 app.use('/ourteam',ourTeamRoutes);
 app.use('/faqs',faqRoutes);
 app.use('/casedetails',casedetails);
-app.use('/calendar',carouselRoutes);
+app.use('/calendar',calender);
 
 
 
