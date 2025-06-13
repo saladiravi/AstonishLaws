@@ -16,7 +16,7 @@ exports.addCalendar = async (req, res) => {
 
     try {
         const result = await pool.query(
-            "INSERT INTO tbl_calendar(image_path) VALUES($1) RETURNING *",
+            "INSERT INTO tbl_calendar(calendar_img, created_at) VALUES($1, CURRENT_DATE) RETURNING *",
             [calendar_img]
         );
 
@@ -33,6 +33,7 @@ exports.addCalendar = async (req, res) => {
         });
     }
 };
+
 
 
 
