@@ -10,7 +10,7 @@ router.post('/addcase',caseTitleController.addCaseTitle);
 router.get('/getallcases',caseTitleController.getAllCaseTitles);
 router.post('/getcasesbyId',caseTitleController.getCaseTitleById)
 router.post('/updatecase',caseTitleController.updateCaseTitle) ;
-
+router.post('/getcasesByCategory',caseTitleController.getCasesByCategory);
 router.post('/deletecase',caseTitleController.deleteCaseTitle);
  
 module.exports=router;

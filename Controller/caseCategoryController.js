@@ -2,49 +2,92 @@ const pool = require('../db/db');
 const bcrypt = require('bcryptjs');
  
  
-exports.addcasecategory = async (req, res) => {
-    const { case_name } = req.body
+// exports.addcasecategory = async (req, res) => {
+//     const { case_name } = req.body
  
-    try {
-        if (!case_name) {
-            return res.status(400).json({ error: 'case name required' });
+//     try {
+//         if (!case_name) {
+//             return res.status(400).json({ error: 'case name required' });
  
-        }
+//         }
  
  
      
-        const caseImage = req.files && req.files.case_image
-            ? `uploads/${req.files.case_image[0].filename}`
-            : null;
+//         const caseImage = req.files && req.files.case_image
+//             ? `uploads/${req.files.case_image[0].filename}`
+//             : null;
  
  
-            const cases = await pool.query(
-                `INSERT INTO public.tbl_case_category (
-                  case_name,
-                  case_image
-                ) VALUES ($1, $2) RETURNING *`,
-                [
-                  case_name,
-                  caseImage
-                ]
-              );
+//             const cases = await pool.query(
+//                 `INSERT INTO public.tbl_case_category (
+//                   case_name,
+//                   case_image
+//                 ) VALUES ($1, $2) RETURNING *`,
+//                 [
+//                   case_name,
+//                   caseImage
+//                 ]
+//               );
              
  
  
+//         res.status(200).json({
+//             statusCode: 200,
+//             message: 'Case Added Successfully',
+//             case: cases.rows[0],
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(500).json({ error: 'Internal server error' })
+//     }
+// }
+ 
+ 
+ 
+ exports.addcasecategory = async (req, res) => {
+    const { case_name } = req.body;
+
+    try {
+        if (!case_name) {
+            return res.status(400).json({ error: 'Case name is required' });
+        }
+
+        // 1. Check for duplicate
+        const existing = await pool.query(
+            `SELECT * FROM tbl_case_category WHERE LOWER(case_name) = LOWER($1)`,
+            [case_name]
+        );
+
+        if (existing.rows.length > 0) {
+            return res.status(409).json({
+                statusCode: 409,
+                message: 'Case name already exists',
+            });
+        }
+
+        // 2. Handle file (if any)
+        const caseImage = req.files && req.files.case_image
+            ? `uploads/${req.files.case_image[0].filename}`
+            : null;
+
+        // 3. Insert new case
+        const cases = await pool.query(
+            `INSERT INTO tbl_case_category (case_name, case_image)
+             VALUES ($1, $2) RETURNING *`,
+            [case_name, caseImage]
+        );
+
         res.status(200).json({
             statusCode: 200,
             message: 'Case Added Successfully',
             case: cases.rows[0],
-        })
+        });
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: 'Internal server error' })
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-}
- 
- 
- 
- 
+};
+
  
  
  
