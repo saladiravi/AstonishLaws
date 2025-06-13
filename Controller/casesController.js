@@ -211,3 +211,48 @@ exports.getCaseTitleById = async (req, res) => {
         )
     }
 }
+
+exports.getCasesByCategory = async (req, res) => {
+    const { case_category_id } = req.body;
+
+    if (!case_category_id) {
+        return res.status(400).json({
+            message: "case_category_id is required",
+            statusCode: 400
+        });
+    }
+
+    try {
+        const cases = await pool.query(`
+            SELECT 
+                ct.case_id, 
+                ct.case_title_name,
+                ct.case_category_id, 
+                c.case_name  
+            FROM tbl_cases ct 
+            JOIN tbl_case_category c 
+                ON ct.case_category_id = c.case_category_id
+            WHERE ct.case_category_id = $1
+        `, [case_category_id]);
+
+        if (!cases.rows || cases.rows.length === 0) {
+            return res.status(404).json({
+                message: "No cases found for this category",
+                statusCode: 404
+            });
+        }
+
+        return res.status(200).json({
+            message: "Cases fetched successfully",
+            statusCode: 200,
+            cases: cases.rows
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Server error",
+            statusCode: 500
+        });
+    }
+};
