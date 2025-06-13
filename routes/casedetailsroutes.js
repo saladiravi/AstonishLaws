@@ -8,6 +8,9 @@ router.post('/addcasedetails',upload.fields([
     {name:'case_file',maxCount:1}]),casedetails.addCaseContent);
 router.get('/getcasedetails',casedetails.getAllCaseContent);
 router.post('/getCasedetailsByCaseId',casedetails.getCaseById);
-
+router.post('/updateCasedetails',upload.fields([
+    {name:'case_file',maxCount:1}]),casedetails.updateCaseContent);
+router.post('/deletecasedetails',casedetails.deleteCaseContent);
+ 
  
 module.exports=router
