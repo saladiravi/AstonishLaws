@@ -16,9 +16,10 @@ exports.addCalendar = async (req, res) => {
 
     try {
         const result = await pool.query(
-            "INSERT INTO tbl_calendar(calendar_img, created_at) VALUES($1, CURRENT_DATE) RETURNING *",
+            "INSERT INTO public.tbl_calendar(calendar_img, created_at) VALUES($1, CURRENT_DATE) RETURNING *",
             [calendar_img]
         );
+
 
         return res.status(201).json({
             message: "Successfully created calendar image",
