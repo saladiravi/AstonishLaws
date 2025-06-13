@@ -113,3 +113,100 @@ exports.getCaseById = async (req, res) => {
         });
     }
 };
+
+
+
+exports.deleteCaseContent = async (req, res) => {
+    const { case_details_id } = req.body;
+
+    if (!case_details_id) {
+        return res.status(400).json({
+            message: "Case Details ID is required",
+            statusCode: 400
+        });
+    }
+
+    try {
+        const existing = await pool.query(
+            `SELECT * FROM tbl_case_details WHERE case_details_id = $1`,
+            [case_details_id]
+        );
+
+        if (existing.rows.length === 0) {
+            return res.status(404).json({
+                message: "Case content not found",
+                statusCode: 404
+            });
+        }
+
+        await pool.query(
+            `DELETE FROM tbl_case_details WHERE case_details_id = $1`,
+            [case_details_id]
+        );
+
+        return res.status(200).json({
+            message: "Case content deleted successfully",
+            statusCode: 200
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Server error",
+            statusCode: 500
+        });
+    }
+};
+
+
+exports.updateCaseContent = async (req, res) => {
+    const { case_details_id, case_category_id, case_id, case_content } = req.body;
+
+    if (!case_details_id) {
+        return res.status(400).json({
+            message: "Case Details ID is required",
+            statusCode: 400
+        });
+    }
+
+    try {
+        const casefile = req.files && req.files.case_file
+            ? `uploads/${req.files.case_file[0].filename}`
+            : null;
+
+        // First, get the existing record
+        const existing = await pool.query(
+            `SELECT * FROM tbl_case_details WHERE case_details_id = $1`,
+            [case_details_id]
+        );
+
+        if (existing.rows.length === 0) {
+            return res.status(404).json({
+                message: "Case content not found",
+                statusCode: 404
+            });
+        }
+
+        const updated = await pool.query(
+            `UPDATE tbl_case_details 
+             SET case_category_id = $1,
+                 case_id = $2,
+                 case_file = COALESCE($3, case_file),
+                 case_content = $4
+             WHERE case_details_id = $5
+             RETURNING *`,
+            [case_category_id, case_id, casefile, case_content, case_details_id]
+        );
+
+        return res.status(200).json({
+            message: "Case content updated successfully",
+            statusCode: 200,
+            case: updated.rows[0]
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Server error",
+            statusCode: 500
+        });
+    }
+};
