@@ -22,6 +22,10 @@ const clientReviewRoutes=require('./routes/clientreviewsroutes');
 const faqRoutes=require('./routes/faqroutes');
 const casedetails=require('./routes/casedetailsroutes');
 const calender=require('./routes/calenderroutes');
+const aboutRoute=require('./routes/aboutroutes');
+
+
+
 
 
 const app = express();
@@ -47,6 +51,7 @@ app.use('/ourteam',ourTeamRoutes);
 app.use('/faqs',faqRoutes);
 app.use('/casedetails',casedetails);
 app.use('/calendar',calender);
+app.use('/about',aboutRoute);
 
 
 

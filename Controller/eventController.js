@@ -224,7 +224,7 @@ exports.getAllevents = async (req, res) => {
                 e.event_end_date,
                 e.event_end_time,
                 e.event_address,
-                json_agg(
+                COALESCE(json_agg(
                     json_build_object(
                         'speaker_name', s.speaker_name, 
                         'date', s.date,
@@ -232,9 +232,9 @@ exports.getAllevents = async (req, res) => {
                         'to_time', s.to_time,
                         'designation', s.designation
                     )
-                ) AS Speakers
+                ) FILTER (WHERE s.speaker_name IS NOT NULL), '[]') AS speakers
             FROM tbl_event e
-            INNER JOIN tbl_speaker s ON e.event_id = s.event_id
+            LEFT JOIN tbl_speaker s ON e.event_id = s.event_id
             GROUP BY
                 e.event_id,
                 e.event_title,
@@ -244,7 +244,8 @@ exports.getAllevents = async (req, res) => {
                 e.event_start_time,
                 e.event_end_date,
                 e.event_end_time,
-                e.event_address;`;
+                e.event_address;
+        `;
 
         const result = await pool.query(query);
 
@@ -264,6 +265,7 @@ exports.getAllevents = async (req, res) => {
 
 
 
+
 exports.geteventById = async (req, res) => {
     try {
         const { event_id } = req.body;
@@ -271,7 +273,7 @@ exports.geteventById = async (req, res) => {
         if (!event_id) {
             return res.status(400).json({
                 statusCode: 400,
-                message: 'Event ID  is required'
+                message: 'Event ID is required'
             });
         }
 
@@ -286,7 +288,7 @@ exports.geteventById = async (req, res) => {
                 e.event_end_date,
                 e.event_end_time,
                 e.event_address,
-                json_agg(
+                COALESCE(json_agg(
                     json_build_object(
                         'speaker_name', s.speaker_name, 
                         'date', s.date,
@@ -294,10 +296,10 @@ exports.geteventById = async (req, res) => {
                         'to_time', s.to_time,
                         'designation', s.designation
                     )
-                ) AS Speakers
+                ) FILTER (WHERE s.speaker_name IS NOT NULL), '[]') AS speakers
             FROM tbl_event e
-            INNER JOIN tbl_speaker s ON e.event_id = s.event_id
-            WHERE e.event_id=$1
+            LEFT JOIN tbl_speaker s ON e.event_id = s.event_id
+            WHERE e.event_id = $1
             GROUP BY
                 e.event_id,
                 e.event_title,
@@ -307,31 +309,32 @@ exports.geteventById = async (req, res) => {
                 e.event_start_time,
                 e.event_end_date,
                 e.event_end_time,
-                e.event_address;`;
-
+                e.event_address;
+        `;
 
         const result = await pool.query(query, [event_id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({
                 statusCode: 404,
-                message: 'events not found'
+                message: 'Event not found'
             });
         }
 
         res.status(200).json({
             statusCode: 200,
-            data: result.rows[0], // Return only the product object
+            data: result.rows[0],
         });
 
     } catch (error) {
-        console.error("Error fetching product by ID:", error);
+        console.error("Error fetching event by ID:", error);
         res.status(500).json({
             statusCode: 500,
             message: 'Internal Server Error'
         });
     }
 };
+
 
 
 exports.updateevent = async (req, res) => {
@@ -348,92 +351,115 @@ exports.updateevent = async (req, res) => {
             speakers
         } = req.body;
 
-        if (!event_id || !event_title || !speakers) {
+        if (!event_id) {
             return res.status(400).json({
                 statusCode: 400,
-                message: 'event_id, event_title, and speakers are required',
+                message: 'event_id is required'
             });
         }
 
-        // Handle image upload if new image is provided
+        // Build dynamic update fields
+        const fields = [];
+        const values = [];
+        let index = 1;
+
+        if (event_title) {
+            fields.push(`event_title = $${index++}`);
+            values.push(event_title);
+        }
+        if (event_description) {
+            fields.push(`event_description = $${index++}`);
+            values.push(event_description);
+        }
+        if (event_start_date) {
+            fields.push(`event_start_date = $${index++}`);
+            values.push(event_start_date);
+        }
+        if (event_start_time) {
+            fields.push(`event_start_time = $${index++}`);
+            values.push(event_start_time);
+        }
+        if (event_end_date) {
+            fields.push(`event_end_date = $${index++}`);
+            values.push(event_end_date);
+        }
+        if (event_end_time) {
+            fields.push(`event_end_time = $${index++}`);
+            values.push(event_end_time);
+        }
+        if (event_address) {
+            fields.push(`event_address = $${index++}`);
+            values.push(event_address);
+        }
+
+        // Check for uploaded image
         const eventImage = req.files?.event_image?.[0]?.filename
             ? `uploads/${req.files.event_image[0].filename}`
             : null;
 
-        // Update event table
-        const updateQuery = `
-            UPDATE public.tbl_event
-            SET
-                event_title = $1,
-                event_description = $2,
-                event_image = COALESCE($3, event_image),
-                event_start_date = $4,
-                event_start_time = $5,
-                event_end_date = $6,
-                event_end_time = $7,
-                event_address = $8
-            WHERE event_id = $9
-        `;
-
-        await pool.query(updateQuery, [
-            event_title,
-            event_description,
-            eventImage,
-            event_start_date,
-            event_start_time,
-            event_end_date,
-            event_end_time,
-            event_address,
-            event_id
-        ]);
-
-        // Delete existing speakers for the event
-        await pool.query(`DELETE FROM public.tbl_speaker WHERE event_id = $1`, [event_id]);
-
-        // Handle speakers array (parse if it's a JSON string)
-        const speakersData = Array.isArray(speakers) ? speakers : JSON.parse(speakers);
-
-        // Insert updated speakers
-        for (const { speaker_name, date, from_time, to_time, designation } of speakersData) {
-            await pool.query(
-                `INSERT INTO public.tbl_speaker (
-                    speaker_name,
-                    date,
-                    from_time,
-                    to_time,
-                    designation,
-                    event_id
-                ) VALUES ($1, $2, $3, $4, $5, $6)`,
-                [speaker_name, date, from_time, to_time, designation, event_id]
-            );
+        if (eventImage) {
+            fields.push(`event_image = $${index++}`);
+            values.push(eventImage);
         }
 
-        // Final response
+        if (fields.length > 0) {
+            const updateQuery = `
+                UPDATE tbl_event
+                SET ${fields.join(', ')}
+                WHERE event_id = $${index}
+            `;
+            values.push(event_id);
+            await pool.query(updateQuery, values);
+        }
+
+        // Handle speakers only if field is present
+        if (speakers !== undefined && speakers !== null && speakers !== '') {
+            let speakersData = [];
+
+            try {
+                speakersData = Array.isArray(speakers)
+                    ? speakers
+                    : JSON.parse(speakers);
+            } catch (parseError) {
+                return res.status(400).json({
+                    statusCode: 400,
+                    message: 'Invalid speaker format (must be valid JSON array)'
+                });
+            }
+
+            // Delete existing speakers
+            await pool.query(`DELETE FROM tbl_speaker WHERE event_id = $1`, [event_id]);
+
+            // Insert new speakers
+            for (const { speaker_name, date, from_time, to_time, designation } of speakersData) {
+                await pool.query(
+                    `INSERT INTO tbl_speaker (
+                        speaker_name,
+                        date,
+                        from_time,
+                        to_time,
+                        designation,
+                        event_id
+                    ) VALUES ($1, $2, $3, $4, $5, $6)`,
+                    [speaker_name, date, from_time, to_time, designation, event_id]
+                );
+            }
+        }
+
         res.status(200).json({
             statusCode: 200,
-            message: 'Event and speakers updated successfully',
-            event: {
-                event_id,
-                event_title,
-                event_description,
-                event_start_date,
-                event_start_time,
-                event_end_date,
-                event_end_time,
-                event_address,
-                event_image: eventImage,
-                speakers: speakersData
-            }
+            message: 'Event updated successfully'
         });
 
     } catch (error) {
         console.error('updateevent error:', error);
         res.status(500).json({
             statusCode: 500,
-            message: 'Internal Server Error',
+            message: 'Internal Server Error'
         });
     }
 };
+
 
 
 
