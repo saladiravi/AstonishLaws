@@ -21,9 +21,9 @@ exports.addCalendar = async (req, res) => {
         );
 
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: "Successfully created calendar image",
-            statusCode: 201,
+            statusCode: 200,
             calendar: result.rows[0]
         });
     } catch (err) {

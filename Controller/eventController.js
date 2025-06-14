@@ -3,6 +3,103 @@ const pool = require('../db/db')
 
 
 
+// exports.addevent = async (req, res) => {
+//     try {
+//         const {
+//             event_title,
+//             event_description,
+//             event_start_date,
+//             event_start_time,
+//             event_end_date,
+//             event_end_time,
+//             event_address,
+//             speakers
+//         } = req.body;
+
+//         // Validation
+//         if (!event_title || !speakers) {
+//             return res.status(400).json({
+//                 statusCode: 400,
+//                 message: 'event_title and speakers are required',
+//             });
+//         }
+
+//         // Handle image upload
+//         const eventImage = req.files?.event_image?.[0]?.filename
+//             ? `uploads/${req.files.event_image[0].filename}`
+//             : null;
+
+//         // Corrected event insert query (fixed VALUES placeholders and column count)
+//         const eventQuery = `
+//             INSERT INTO public.tbl_event (
+//                 event_title,
+//                 event_description,
+//                 event_image,
+//                 event_start_date,
+//                 event_start_time,
+//                 event_end_date,
+//                 event_end_time,
+//                 event_address
+//             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING event_id
+//         `;
+
+//         const eventResult = await pool.query(eventQuery, [
+//             event_title,
+//             event_description,
+//             eventImage,
+//             event_start_date,
+//             event_start_time,
+//             event_end_date,
+//             event_end_time,
+//             event_address
+//         ]);
+
+//         const event_id = eventResult.rows[0].event_id;
+
+//         // Handle speakers array (parse if it's a JSON string)
+//         const speakersData = Array.isArray(speakers) ? speakers : JSON.parse(speakers);
+
+//         for (const { speaker_name, date, from_time, to_time, designation } of speakersData) {
+//             await pool.query(
+//                 `INSERT INTO public.tbl_speaker (
+//                     speaker_name,
+//                     date,
+//                     from_time,
+//                     to_time,
+//                     designation,
+//                     event_id
+//                 ) VALUES ($1, $2, $3, $4, $5, $6)`,
+//                 [speaker_name, date, from_time, to_time, designation, event_id]
+//             );
+//         }
+
+//         // Final response
+//         res.status(200).json({
+//             statusCode: 200,
+//             message: 'Event and speakers added successfully',
+//             event: {
+//                 event_id,
+//                 event_title,
+//                 event_description,
+//                 event_start_date,
+//                 event_start_time,
+//                 event_end_date,
+//                 event_end_time,
+//                 event_address,
+//                 event_image: eventImage,
+//                 speakers: speakersData
+//             }
+//         });
+
+//     } catch (error) {
+//         console.error('addevent error:', error);
+//         res.status(500).json({
+//             statusCode: 500,
+//             message: 'Internal Server Error',
+//         });
+//     }
+// };
+
 exports.addevent = async (req, res) => {
     try {
         const {
@@ -17,10 +114,10 @@ exports.addevent = async (req, res) => {
         } = req.body;
 
         // Validation
-        if (!event_title || !speakers) {
+        if (!event_title) {
             return res.status(400).json({
                 statusCode: 400,
-                message: 'event_title and speakers are required',
+                message: 'event_title is required',
             });
         }
 
@@ -29,7 +126,7 @@ exports.addevent = async (req, res) => {
             ? `uploads/${req.files.event_image[0].filename}`
             : null;
 
-        // Corrected event insert query (fixed VALUES placeholders and column count)
+        // Insert event data
         const eventQuery = `
             INSERT INTO public.tbl_event (
                 event_title,
@@ -56,24 +153,38 @@ exports.addevent = async (req, res) => {
 
         const event_id = eventResult.rows[0].event_id;
 
-        // Handle speakers array (parse if it's a JSON string)
-        const speakersData = Array.isArray(speakers) ? speakers : JSON.parse(speakers);
+        // Handle optional speakers
+        let speakersData = [];
 
-        for (const { speaker_name, date, from_time, to_time, designation } of speakersData) {
-            await pool.query(
-                `INSERT INTO public.tbl_speaker (
-                    speaker_name,
-                    date,
-                    from_time,
-                    to_time,
-                    designation,
-                    event_id
-                ) VALUES ($1, $2, $3, $4, $5, $6)`,
-                [speaker_name, date, from_time, to_time, designation, event_id]
-            );
+        if (speakers) {
+            try {
+                speakersData = Array.isArray(speakers)
+                    ? speakers
+                    : JSON.parse(speakers);
+            } catch (parseError) {
+                return res.status(400).json({
+                    statusCode: 400,
+                    message: 'Invalid JSON format for speakers',
+                });
+            }
+
+            // Insert each speaker into the database
+            for (const { speaker_name, date, from_time, to_time, designation } of speakersData) {
+                await pool.query(
+                    `INSERT INTO public.tbl_speaker (
+                        speaker_name,
+                        date,
+                        from_time,
+                        to_time,
+                        designation,
+                        event_id
+                    ) VALUES ($1, $2, $3, $4, $5, $6)`,
+                    [speaker_name, date, from_time, to_time, designation, event_id]
+                );
+            }
         }
 
-        // Final response
+        // Send success response
         res.status(200).json({
             statusCode: 200,
             message: 'Event and speakers added successfully',
@@ -87,7 +198,7 @@ exports.addevent = async (req, res) => {
                 event_end_time,
                 event_address,
                 event_image: eventImage,
-                speakers: speakersData
+                speakers: speakersData.length ? speakersData : []
             }
         });
 
@@ -99,8 +210,6 @@ exports.addevent = async (req, res) => {
         });
     }
 };
-
-
 
 exports.getAllevents = async (req, res) => {
     try {
