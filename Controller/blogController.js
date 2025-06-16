@@ -146,7 +146,7 @@ exports.updateBlog = async (req, res) => {
     try {
         const { blog_id, case_category_id, title, description } = req.body;
         const blogImageFile = req.files?.blog_image?.[0];
-        const blogVideoFile = req.files?.blog_video?.[0];
+        const blogVideoFile = req.files?.blog_file?.[0];
 
         await client.query('BEGIN');
 
