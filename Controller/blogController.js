@@ -150,13 +150,18 @@ exports.updateBlog = async (req, res) => {
 
         await client.query('BEGIN');
 
-        // Update category in tbl_blogs
-        await client.query(
+        // ✅ Check if blog exists and is updated
+        const updateResult = await client.query(
             `UPDATE tbl_blogs SET case_category_id = $1 WHERE blog_id = $2`,
             [case_category_id, blog_id]
         );
 
-        // Remove old blog data
+        if (updateResult.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ statusCode: 404, message: 'Blog not found' });
+        }
+
+        // Delete old blog data
         await client.query(`DELETE FROM tbl_blogs_data WHERE blog_id = $1`, [blog_id]);
 
         const blog_image = blogImageFile ? `uploads/${blogImageFile.filename}` : null;
@@ -181,7 +186,6 @@ exports.updateBlog = async (req, res) => {
         client.release();
     }
 };
-
 
 exports.getBlogsByCaseCategoryId = async (req, res) => {
     try {
