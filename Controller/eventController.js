@@ -187,7 +187,7 @@ exports.addevent = async (req, res) => {
         // Send success response
         res.status(200).json({
             statusCode: 200,
-            message: 'Event and speakers added successfully',
+            message: 'dded successfully',
             event: {
                 event_id,
                 event_title,
