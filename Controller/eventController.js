@@ -114,7 +114,7 @@ exports.addevent = async (req, res) => {
         } = req.body;
 
         // Validation
-        if (!event_title,event_description) {
+        if (!event_title || event_description) {
             return res.status(400).json({
                 statusCode: 400,
                 message: 'event title, Description  is required',
