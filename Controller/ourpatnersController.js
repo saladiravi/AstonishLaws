@@ -36,14 +36,15 @@ exports.createPartner = async (req, res) => {
     
 
     try {
-        await pool.query(
+        const partnersresult=await pool.query(
             "INSERT INTO tbl_our_partners (partner_name, partner_image) VALUES ($1, $2)",
             [partner_name, partner_image]
         );
 
         return res.status(200).json({
+            statusCode: 200,
             message: "Partner created successfully",
-            statusCode: 200
+            partners:partnersresult.rows[0]
         });
     } catch (err) {
         console.log(err);
