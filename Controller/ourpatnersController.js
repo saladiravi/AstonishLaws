@@ -37,7 +37,7 @@ exports.createPartner = async (req, res) => {
 
     try {
         const partnersresult=await pool.query(
-            "INSERT INTO tbl_our_partners (partner_name, partner_image) VALUES ($1, $2)",
+            "INSERT INTO tbl_our_partners (partner_name, partner_image) VALUES ($1, $2) RETURNING *",
             [partner_name, partner_image]
         );
 
