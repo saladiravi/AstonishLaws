@@ -123,7 +123,7 @@ exports.updatePartner = async (req, res) => {
         return res.status(200).json({
             message: "Partner updated successfully",
             statusCode: 200,
-            partner:result.rows[0]
+            partners:result.rows[0]
         });
     } catch (err) {
         console.log(err);
