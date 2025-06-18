@@ -109,7 +109,7 @@ exports.updatePartner = async (req, res) => {
 
     try {
         const result = await pool.query(
-            "UPDATE tbl_our_partners SET partner_name = $1, partner_image = $2 WHERE partner_id = $3",
+            "UPDATE tbl_our_partners SET partner_name = $1, partner_image = $2 WHERE partner_id = $3 RETURNING *",
             [partner_name, partner_image, partner_id]
         );
 
