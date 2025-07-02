@@ -24,7 +24,7 @@ const casedetails=require('./routes/casedetailsroutes');
 const calender=require('./routes/calenderroutes');
 const aboutRoute=require('./routes/aboutroutes');
 const ourpatners= require('./routes/ourpatnersroutes');
-
+const aiservice=require('./routes/airoutes');
 
 
 
@@ -34,10 +34,9 @@ const app = express();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 app.use(express.json());
 app.use(cors()); 
- 
+
 app.use('/admin', adminRoutes);
 app.use('/carousel',carouselRoutes);
- 
 app.use('/event',eventRoute);
 app.use('/ads',adsRoutes);
 app.use('/blog',blogRoutes);
@@ -54,7 +53,7 @@ app.use('/casedetails',casedetails);
 app.use('/calendar',calender);
 app.use('/about',aboutRoute);
 app.use('/ourpatners',ourpatners);
-
+app.use('/ai',aiservice);
 
 
 
