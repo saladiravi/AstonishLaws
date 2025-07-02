@@ -77,3 +77,17 @@ exports.reqAi = async (req, res) => {
         return res.status(500).json({ message: "AI request failed" });
     }
 };
+
+
+exports.getAiHistory = async (req, res) => {
+    try {
+        const result = await pool.query(
+            "SELECT queries_id, prompt, response FROM ai_queries ORDER BY queries_id DESC"
+        );
+
+        return res.json({ history: result.rows });
+    } catch (err) {
+        console.error("DB fetch error:", err);
+        return res.status(500).json({ message: "Failed to fetch AI history" });
+    }
+};

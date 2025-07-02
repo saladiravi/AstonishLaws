@@ -4,5 +4,8 @@ const router=express.Router();
  
 
 router.post('/createai',aicontroller.reqAi);
+router.get('/getaichat',aicontroller.getAiHistory);
+
+
 
 module.exports=router
