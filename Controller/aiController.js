@@ -81,9 +81,8 @@ exports.reqAi = async (req, res) => {
 
 exports.getAiHistory = async (req, res) => {
     try {
-        const result = await pool.query(
-            "SELECT queries_id, prompt, response FROM ai_queries ORDER BY queries_id ASC"
-        );
+      const result = await pool.query('SELECT * FROM public.ai_queries ORDER BY queries_id ASC');
+
 
         return res.json({ history: result.rows });
     } catch (err) {
